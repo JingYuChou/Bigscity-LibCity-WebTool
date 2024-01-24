@@ -91,7 +91,16 @@ export const constantRoutes = [
       meta: { title: 'dashboard', icon: 'dashboard' }
     }]
   },
-
+  {
+    path: '/aichat',
+    component: Layout,
+    children: [{
+      path: 'index',
+      name: 'aichat',
+      component: () => import('@/views/AIChat/index'),
+      meta: { title: 'aichat', icon: 'chatgpt' }
+    }]
+  },
   {
     path: '/evaluate',
     component: Layout,

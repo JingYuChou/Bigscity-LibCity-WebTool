@@ -2,6 +2,7 @@ export default {
   route: {
     bindMail: '绑定邮箱',
     dashboard: '首页',
+    aichat: 'AI助手',
     documentation: '文档',
     guide: '引导页',
     permission: '权限测试页',
@@ -83,6 +84,7 @@ export default {
   navbar: {
     bindMail: '绑定邮箱',
     dashboard: '首页',
+    aichat: 'AI助手',
     github: '项目地址',
     logOut: '退出登录',
     profile: '个人中心',
@@ -340,6 +342,7 @@ export default {
     fileUpload: '文件上传',
     pleaseInputFileName: '请输入文件名称',
     clickUpload: '将文件拖到此处，或点击上传',
+    aiUploadTips: '注意：只能上传ZIP文件',
     uploadTips: '注意：只能上传ZIP文件，数据包应包含数据原子文件，包括：xxx.geo、xxx.usr、xxx.rel、xxx.dyna、xxx.ext、xxx.grid、xxx.gridod、config.json；对于不同的交通预测任务，可能用到不同的原子文件，同一个数据集不一定包含全部几种原子文件。',
     uploadSuccess: '文件上传成功！',
     background: '选择可视化底图',

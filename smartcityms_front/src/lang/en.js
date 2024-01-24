@@ -2,6 +2,7 @@ export default {
   route: {
     bindMail: 'Bind E-Mail',
     dashboard: 'Dashboard',
+    aichat: 'AI Chat',
     documentation: 'Documentation',
     guide: 'Guide',
     permission: 'Permission',
@@ -83,6 +84,7 @@ export default {
   navbar: {
     bindMail: 'Bind E-Mail',
     dashboard: 'Dashboard',
+    aichat: 'AI Chat',
     github: 'Github',
     logOut: 'Log Out',
     profile: 'Profile',
@@ -341,6 +343,7 @@ export default {
     fileUpload: 'File upload',
     pleaseInputFileName: 'Please enter a file name',
     clickUpload: 'Drag files here, or click upload',
+    aiUploadTips: 'Note: only zip files can be uploaded',
     uploadTips: 'Note: only zip files can be uploaded, The data package shall contain data atomic files, including: xxx.geo、xxx.usr、xxx.rel、xxx.dyna、xxx.ext、xxx.grid、xxx.gridod、config.json; For different traffic prediction tasks, different atomic files may be used, and a dataset may not contain all kinds of atomic files.',
     uploadSuccess: 'File upload succeeded!',
     background: 'choose background',

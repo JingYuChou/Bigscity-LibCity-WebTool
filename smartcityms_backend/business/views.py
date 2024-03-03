@@ -308,11 +308,11 @@ class TaskViewSet(ModelViewSet):
         message = request.data.get('message')
         # TODO:1、如果message为“我确认开始实验”，则读取Conversation文件夹下user_id对应的params.json，如果满足创建实验条件，则创建实验
         #  2、从Conversation文件夹读取user_id对应的messages.json，添加新的message，发给ChatGpt
-
+        
         # TODO:从Conversation文件夹读取user_id对应的params.json, 结合message，调用ChatGpt更新JSON
 
         # TODO:判断是否达成创建实验条件，如果达成，回复“请问是否还有其他需要添加的参数，如果没有，请输入"我确认开始实验"”
-        
+
 
     def get_serializer_class(self):
         """

@@ -255,6 +255,6 @@ ADMIN_FRONT_HTML_PATH = "D:/LibCity/Bigscity-LibCity-WebTool-master/smartcityms_
 
 # AI助手相关参数
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
-API_KEY = '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'
+API_KEY = 'your_api_key'
 DATA_DIR = os.path.join(SRC_DIR, 'data')
 CONFIG_PATH = os.path.join(DATA_DIR, 'config.json')

@@ -6,6 +6,7 @@ import shutil
 import tempfile
 import time
 import zipfile
+import openai
 from string import Template
 from urllib.parse import quote
 
@@ -304,14 +305,32 @@ class TaskViewSet(ModelViewSet):
         """
         与AI助手交流，自动创建任务
         """
+        model_name = 'your_gpt_model'
         user_id = request.data.get('user_id')
         message = request.data.get('message')
         # TODO:1、如果message为“我确认开始实验”，则读取Conversation文件夹下user_id对应的params.json，如果满足创建实验条件，则创建实验
         #  2、从Conversation文件夹读取user_id对应的messages.json，添加新的message，发给ChatGpt
         
         # TODO:从Conversation文件夹读取user_id对应的params.json, 结合message，调用ChatGpt更新JSON
-
+        with open('Conversation/' + user_id + '_prams.json', 'r', encoding='UTF-8') as f:
+            params = f.read()
+        completion = openai.ChatCompletion.create(
+            model=model_name,
+            messages=[
+                {"role": "user",
+                 "content": params + "这是一个需要维护的json数据，格式如下：" + settings.TASK_PARAM_DESCRIBE +
+                 "请根据以下内容进行更新，只要返回json字符串，不要返回其他内容：" + message
+                 }
+            ]
+        )
+        params = completion["choices"][0]["message"]["content"]
+        with open('Conversation/' + user_id + '_prams.json', 'w', encoding='UTF-8') as f:
+            f.write(params)
         # TODO:判断是否达成创建实验条件，如果达成，回复“请问是否还有其他需要添加的参数，如果没有，请输入"我确认开始实验"”
+        return Response(data={"answer": "请问是否还有其他需要添加的参数，如果没有，请输入\"我确认开始实验\""}, status=201)
+        
+
+
 
 
     def get_serializer_class(self):

@@ -16,9 +16,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from loguru import logger
 
-
 import os
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -82,7 +80,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -231,7 +228,7 @@ CORS_ALLOW_CREDENTIALS = True
 # libcity程序目录
 LIBCITY_PATH = 'D:/LibCity/Bigscity-LibCity'
 # 指标文件目录
-EVALUATE_PATH_PREFIX = LIBCITY_PATH + os.sep +'libcity' + os.sep + 'cache' + os.sep
+EVALUATE_PATH_PREFIX = LIBCITY_PATH + os.sep + 'libcity' + os.sep + 'cache' + os.sep
 EVALUATE_PATH_SUFFIX = os.sep + 'evaluate_cache' + os.sep
 # run_model.py脚本文件位置
 RUN_MODEL_PATH = 'run_model.py'
@@ -258,3 +255,27 @@ SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 API_KEY = 'your_api_key'
 DATA_DIR = os.path.join(SRC_DIR, 'data')
 CONFIG_PATH = os.path.join(DATA_DIR, 'config.json')
+TASK_PARAM_DESCRIBE = """task_name = models.CharField(max_length=50, unique=True)
+    task_name_show = models.CharField(max_length=50, null=True)
+    task_description = models.CharField(max_length=150, null=True)
+    creator = models.ForeignKey(Account, null=True, db_constraint=False, on_delete=models.SET_NULL)
+    execute_time = models.DateTimeField(null=True)
+    execute_end_time = models.DateTimeField(null=True)
+    task_status = models.IntegerField(default=0)
+    execute_msg = models.TextField(null=True)
+    visibility = models.IntegerField(default=1)    # 私有/公开 0 私有 1 公开
+    task = models.CharField(max_length=30)
+    model = models.CharField(max_length=30)
+    dataset = models.CharField(max_length=100)
+    config_file = models.CharField(max_length=100, null=True)
+    saved_model = models.BooleanField(null=True)
+    train = models.BooleanField(null=True)
+    batch_size = models.BigIntegerField(null=True)
+    train_rate = models.FloatField(null=True)
+    eval_rate = models.FloatField(null=True)
+    learning_rate = models.FloatField(null=True)
+    max_epoch = models.IntegerField(null=True)
+    gpu = models.BooleanField(null=True)
+    gpu_id = models.IntegerField(null=True)
+    exp_id = models.IntegerField(null=True)
+    log_file_name = models.CharField(max_length=255, null=True)"""

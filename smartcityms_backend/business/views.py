@@ -6,10 +6,10 @@ import shutil
 import tempfile
 import time
 import zipfile
-import openai
 from string import Template
 from urllib.parse import quote
 
+import openai
 from django.conf import settings
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.db.models import Q
@@ -38,6 +38,8 @@ from business.threads import ExecuteGeojsonThread, ExecuteGeoViewThread
 from common import utils
 from common.response import PassthroughRenderer
 from common.utils import read_file_str, generate_download_file, str_is_empty
+
+from GPTAssistant import std_json, legal_check, require
 
 
 class FileViewSet(CreateModelMixin, DestroyModelMixin, RetrieveModelMixin, ListModelMixin, GenericViewSet):
@@ -305,33 +307,57 @@ class TaskViewSet(ModelViewSet):
         """
         与AI助手交流，自动创建任务
         """
-        model_name = 'your_gpt_model'
         user_id = request.data.get('user_id')
         message = request.data.get('message')
         # TODO:1、如果message为“我确认开始实验”，则读取Conversation文件夹下user_id对应的params.json，如果满足创建实验条件，则创建实验
-        #  2、从Conversation文件夹读取user_id对应的messages.json，添加新的message，发给ChatGpt
-        
+        #  2、从Conversation文件夹读取user_id对应的messages.json，添加新的message，发给ChatGpt；然后将ChatGpt的回复添加到messages.json
+        folder_path = 'Conversation/'
+        params_path = folder_path + user_id + '_params.json'
+        messages_path = folder_path + user_id + '_messages.json'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        if not os.path.exists(params_path):
+            std_json['creator'] = user_id
+            json.dump(std_json, open(params_path, 'w'))
+        if not os.path.exists(messages_path):
+            json.dump([], open(messages_path, 'w'))
+
+        params = json.load(open(params_path, 'r'))
+        messages = json.load(open(messages_path, 'r'))
+        if message == "我确认开始实验":
+            if legal_check(params):
+                request = {}
+                request.data = params
+                self.create(request)
+                answer = "实验创建成功"
+                return Response({"answer": answer}, status=status.HTTP_200_OK)
+            else:
+                answer = "当前必要参数不完整，无法创建实验，请输入缺少的参数："
+                if params['task_name'] is None:
+                    answer += "实验名称"
+                if params['task'] is None:
+                    answer += "、所属任务"
+                if params['model'] is None:
+                    answer += "、模型"
+                if params['dataset'] is None:
+                    answer += "、数据集"
+                return Response({"answer": answer}, status=status.HTTP_400_BAD_REQUEST)
+
+        messages.append({"role": "user", "content": message})
+        response = require(messages)
+        messages.append({"role": "assistant", "content": response})
+        json.dump(messages, open(messages_path, 'w'))
         # TODO:从Conversation文件夹读取user_id对应的params.json, 结合message，调用ChatGpt更新JSON
         with open('Conversation/' + user_id + '_prams.json', 'r', encoding='UTF-8') as f:
             params = f.read()
-        completion = openai.ChatCompletion.create(
-            model=model_name,
-            messages=[
-                {"role": "user",
-                 "content": params + "这是一个需要维护的json数据，格式如下：" + settings.TASK_PARAM_DESCRIBE +
-                 "请根据以下内容进行更新，只要返回json字符串，不要返回其他内容：" + message
-                 }
-            ]
-        )
-        params = completion["choices"][0]["message"]["content"]
+        messages = [{"role": "user",
+                     "content": params + "这是一个需要维护的json数据，格式如下：" + settings.TASK_PARAM_DESCRIBE +
+                                "请根据以下内容进行更新，只要返回json字符串，不要返回其他内容：" + message}]
+        params = require(messages)
         with open('Conversation/' + user_id + '_prams.json', 'w', encoding='UTF-8') as f:
             f.write(params)
         # TODO:判断是否达成创建实验条件，如果达成，回复“请问是否还有其他需要添加的参数，如果没有，请输入"我确认开始实验"”
         return Response(data={"answer": "请问是否还有其他需要添加的参数，如果没有，请输入\"我确认开始实验\""}, status=201)
-        
-
-
-
 
     def get_serializer_class(self):
         """

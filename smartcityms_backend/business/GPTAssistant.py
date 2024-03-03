@@ -111,7 +111,7 @@ openai.api_key = API_KEY
 model_name = 'your_gpt_model'
 
 
-def require(user_content: str, exp_id: str):
+def require(messages):
     '''
     主要函数，通过调用该函数来交互信息
     @param:
@@ -121,21 +121,12 @@ def require(user_content: str, exp_id: str):
         exp_id:本次对话产生的exp_id,
         response:GPT的回答
     '''
-    # TODO:如果exp_id为空的话，创建一个新的实验
-    if exp_id is None:
-        # TODO:创建实验
-        exp_id = 1
-    # TODO:获取当前的exp_id的json存在user_param中
-    user_param = {}
     completion = openai.ChatCompletion.create(
         model=model_name,
-        messages=[
-            {"role": "user", "content": user_content}
-        ]
+        messages=messages
     )
     response = completion["choices"][0]["message"]["content"]
-    modify_json(user_params=user_param, response=response, exp_id=exp_id, user_content=user_content)
-
+    return response
 
 def modify_json(user_params, response: str, exp_id: str, user_content: str):
     '''
@@ -202,15 +193,15 @@ def write_params(param, exp_id: str):
     # TODO:将param写入数据库
 
 
-def legal_check(user_params: str):
-    '''
+def legal_check(params):
+    """
     这个函数主要是检查用户的参数是否合法
     @param:
         user_params : 用户的参数
     @return:
         bool : 是否合法
-    '''
-    with open(CONFIG_PATH, 'r') as f:
-        config = json.load(f)
-    # TODO:检查参数是否合法
+    """
+    # 判断'实验名称' '所属任务' '模型' '数据集'是否不为空
+    if params['task_name'] == '' or params['task'] == '' or params['model'] == '' or params['dataset'] == '':
+        return False
     return True

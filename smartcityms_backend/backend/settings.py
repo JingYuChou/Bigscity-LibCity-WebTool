@@ -16,7 +16,9 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from loguru import logger
 
+
 import os
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -80,6 +82,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -228,7 +231,7 @@ CORS_ALLOW_CREDENTIALS = True
 # libcity程序目录
 LIBCITY_PATH = 'D:/LibCity/Bigscity-LibCity'
 # 指标文件目录
-EVALUATE_PATH_PREFIX = LIBCITY_PATH + os.sep + 'libcity' + os.sep + 'cache' + os.sep
+EVALUATE_PATH_PREFIX = LIBCITY_PATH + os.sep +'libcity' + os.sep + 'cache' + os.sep
 EVALUATE_PATH_SUFFIX = os.sep + 'evaluate_cache' + os.sep
 # run_model.py脚本文件位置
 RUN_MODEL_PATH = 'run_model.py'
@@ -250,6 +253,7 @@ DATASET_EXAMPLE_PATH = 'D:/LibCity/Bigscity-LibCity-WebTool-master/smartcityms_b
 TASK_PARAM_EXAMPLE_PATH = 'D:/LibCity/Bigscity-LibCity-WebTool-master/smartcityms_backend/sample/config.json'
 ADMIN_FRONT_HTML_PATH = "D:/LibCity/Bigscity-LibCity-WebTool-master/smartcityms_front/dist/"
 
+# AI助手相关参数
 # AI助手相关参数
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 API_KEY = 'your_api_key'

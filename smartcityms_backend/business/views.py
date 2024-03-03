@@ -74,7 +74,8 @@ class FileViewSet(CreateModelMixin, DestroyModelMixin, RetrieveModelMixin, ListM
         for e in zip_list:
             file_name, ext = os.path.splitext(e)
             if (ext != "" or len(ext) != 0) and ext not in atomic_file_ext:
-                return Response(data={'detail': '数据包中文件格式不正确，请上传原子文件'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(data={'detail': '数据包中文件格式不正确，请上传原子文件'},
+                                status=status.HTTP_400_BAD_REQUEST)
         self.is_public = is_public
         enable = self.perform_create(serializer)
         if not enable:
@@ -113,7 +114,8 @@ class FileViewSet(CreateModelMixin, DestroyModelMixin, RetrieveModelMixin, ListM
         # 大文件就直接把临时文件 copy 到 raw_data_path
         if type(my_file) == TemporaryUploadedFile:
             temporary_file_path = my_file.file.name
-            logger.info("存储到服务器上的临时文件路径：{} 正在把此文件复制到 raw_data 目录中：{}", temporary_file_path, zip_path)
+            logger.info("存储到服务器上的临时文件路径：{} 正在把此文件复制到 raw_data 目录中：{}", temporary_file_path,
+                        zip_path)
             shutil.copyfile(temporary_file_path, file_path)
         else:
             # 对于小文件，直接在这处理了
@@ -122,7 +124,8 @@ class FileViewSet(CreateModelMixin, DestroyModelMixin, RetrieveModelMixin, ListM
                     f.write(chunk)
         account = self.request.user  # 上传的时候添加创建者
         is_public = 1 if self.is_public == 'true' else 0
-        serializer.save(file_name=file_name, file_original_name=my_file.name, file_path=file_path, file_size=file_size, creator=account,
+        serializer.save(file_name=file_name, file_original_name=my_file.name, file_path=file_path, file_size=file_size,
+                        creator=account,
                         extract_path=extract_path, dataset_status=DatasetStatusEnum.CHECK.value,
                         visibility=is_public)
         logger.info('文件上传完毕，文件名: ' + file_name)
@@ -218,7 +221,8 @@ class FileViewSet(CreateModelMixin, DestroyModelMixin, RetrieveModelMixin, ListM
         result = self.perform_destroy(instance)
         if result:
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST, data={'detail': '有实验正在使用此数据集，请删除实验后再删除数据集'})
+        return Response(status=status.HTTP_400_BAD_REQUEST,
+                        data={'detail': '有实验正在使用此数据集，请删除实验后再删除数据集'})
 
     @renderer_classes((PassthroughRenderer,))
     @action(methods=['get'], detail=False)
@@ -294,6 +298,21 @@ class TaskViewSet(ModelViewSet):
     queryset = Task.objects.all().order_by('-create_time')
     serializer_class = TaskSerializer
     filter_class = TaskFilter
+
+    @action(methods=['post'], detail=False)
+    def auto_create(self, request, *args, **kwargs):
+        """
+        与AI助手交流，自动创建任务
+        """
+        user_id = request.data.get('user_id')
+        message = request.data.get('message')
+        # TODO:1、如果message为“我确认开始实验”，则读取Conversation文件夹下user_id对应的params.json，如果满足创建实验条件，则创建实验
+        #  2、从Conversation文件夹读取user_id对应的messages.json，添加新的message，发给ChatGpt
+
+        # TODO:从Conversation文件夹读取user_id对应的params.json, 结合message，调用ChatGpt更新JSON
+
+        # TODO:判断是否达成创建实验条件，如果达成，回复“请问是否还有其他需要添加的参数，如果没有，请输入"我确认开始实验"”
+        
 
     def get_serializer_class(self):
         """
@@ -448,7 +467,7 @@ class TaskViewSet(ModelViewSet):
         execute_time = request.query_params.get('execute_time')
         task = self.get_object()
         # 检查任务是否可执行 未开始 和 错误 和 已选择预约时间 三种情况 可以继续往下走
-        if task.task_status != TaskStatusEnum.NOT_STARTED.value and task.task_status != TaskStatusEnum.ERROR.value\
+        if task.task_status != TaskStatusEnum.NOT_STARTED.value and task.task_status != TaskStatusEnum.ERROR.value \
                 and task.task_status != TaskStatusEnum.SELECTED_EXECUTE_TIME.value:
             return Response(data={'detail': '任务正在执行中或已完成，请勿重复执行！'}, status=status.HTTP_400_BAD_REQUEST)
         # 获取任务数据，组装命令

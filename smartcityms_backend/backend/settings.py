@@ -201,7 +201,7 @@ SMTP_SERVER_PORT = 0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['?']
+ALLOWED_HOSTS = ['*']
 
 # 数据库
 DATABASES = {
@@ -209,7 +209,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'django',  # 指定的数据库名
         'USER': 'root',  # 数据库登录的用户名
-        'PASSWORD': '?',  # 登录数据库的密码
+        'PASSWORD': 'hyx031011',  # 登录数据库的密码
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
@@ -218,7 +218,7 @@ DATABASES = {
 # 跨域设置
 # 单个配置
 CORS_ORIGIN_WHITELIST = (
-    'http://?:8000',
+    'http://localhost:9528',
 )
 
 # 允许携带cookie
@@ -229,7 +229,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 # libcity库程序相关
 # libcity程序目录
-LIBCITY_PATH = '/home/houge/Bigscity-LibCity-WebTool/Bigscity-LibCity'
+LIBCITY_PATH = 'D:/LibCity/Bigscity-LibCity'
 # 指标文件目录
 EVALUATE_PATH_PREFIX = LIBCITY_PATH + os.sep +'libcity' + os.sep + 'cache' + os.sep
 EVALUATE_PATH_SUFFIX = os.sep + 'evaluate_cache' + os.sep
@@ -249,6 +249,12 @@ TASK_PARAM_PATH = LIBCITY_PATH + os.sep
 
 # 样例文件相关
 # 数据集样例文件
-DATASET_EXAMPLE_PATH = '/home/houge/Bigscity-LibCity-WebTool/smartcityms_backend/sample/T_DRIVE_SMALL.zip'
-TASK_PARAM_EXAMPLE_PATH = '/home/houge/Bigscity-LibCity-WebTool/smartcityms_backend/sample/config.json'
-ADMIN_FRONT_HTML_PATH = "/home/houge/Bigscity-LibCity-WebTool/smartcityms_front/dist/"
+DATASET_EXAMPLE_PATH = 'D:/LibCity/Bigscity-LibCity-WebTool-master/smartcityms_backend/sample/T_DRIVE_SMALL.zip'
+TASK_PARAM_EXAMPLE_PATH = 'D:/LibCity/Bigscity-LibCity-WebTool-master/smartcityms_backend/sample/config.json'
+ADMIN_FRONT_HTML_PATH = "D:/LibCity/Bigscity-LibCity-WebTool-master/smartcityms_front/dist/"
+
+# AI助手相关参数
+SRC_DIR = os.path.dirname(os.path.abspath(__file__))
+API_KEY = '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'
+DATA_DIR = os.path.join(SRC_DIR, 'data')
+CONFIG_PATH = os.path.join(DATA_DIR, 'config.json')

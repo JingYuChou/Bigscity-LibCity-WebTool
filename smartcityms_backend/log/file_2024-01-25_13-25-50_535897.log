@@ -1,0 +1,4 @@
+2024-01-25 13:25:50.538 | INFO     | backend.settings:<module>:189 - base.py settings loading
+2024-01-25 13:25:54.157 | INFO     | business.urls:<module>:24 - Start to watch log file
+2024-01-25 13:25:54.159 | INFO     | business.urls:<module>:28 - 日志目录不存在，正在创建: D:/LibCity/Bigscity-LibCity\libcity\log\
+2024-01-25 13:25:54.162 | INFO     | business.urls:<module>:35 - LOG_PATH监控线程已启动，LOG_PATH: D:/LibCity/Bigscity-LibCity\libcity\log\

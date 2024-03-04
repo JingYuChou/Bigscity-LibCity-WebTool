@@ -121,6 +121,10 @@ def require(messages):
         exp_id:本次对话产生的exp_id,
         response:GPT的回答
     '''
+    if len(messages) == 0:
+        with open('prompt.txt', 'r') as f:
+            prompt = f.read()
+            messages.append({"role": "system", "content": prompt})
     completion = openai.ChatCompletion.create(
         model=model_name,
         messages=messages

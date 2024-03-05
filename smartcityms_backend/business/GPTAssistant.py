@@ -1,5 +1,5 @@
 import openai, json
-
+from openai import OpenAI
 from backend.settings import API_KEY, CONFIG_PATH
 
 '''
@@ -25,28 +25,28 @@ from backend.settings import API_KEY, CONFIG_PATH
 std_json = {
     "task_name": "",
     "task_name_show": "",
-    "task_description": "",
+    "task_description": None,
     "creator": "",
-    "execute_time": "",
-    "execute_end_time": "",
-    "task_status": "",
-    "execute_msg": "",
-    "visibility": "",
+    "execute_time": None,
+    "execute_end_time": None,
+    "task_status": 0,
+    "execute_msg": None,
+    "visibility": 1,
     "task": "",
     "model": "",
     "dataset": "",
-    "config_file": "",
-    "saved_model": "",
-    "train": "",
-    "batch_size": "",
-    "train_rate": "",
-    "eval_rate": "",
-    "learning_rate": "",
-    "max_epoch": "",
-    "gpu": "",
-    "gpu_id": "",
-    "exp_id": "",
-    "log_file_name": ""
+    "config_file": None,
+    "saved_model": None,
+    "train": None,
+    "batch_size": None,
+    "train_rate": None,
+    "eval_rate": None,
+    "learning_rate": None,
+    "max_epoch": 1,
+    "gpu": True,
+    "gpu_id": 0,
+    "exp_id": None,
+    "log_file_name": None
 }
 
 file_links = {
@@ -108,7 +108,8 @@ file_links = {
 openai.api_key = API_KEY
 
 # TODO:训练好模型之后替代模型名称
-model_name = 'your_gpt_model'
+model_name = 'gpt-3.5-turbo'
+client = OpenAI(api_key=API_KEY)
 
 
 def require(messages):
@@ -121,80 +122,37 @@ def require(messages):
         exp_id:本次对话产生的exp_id,
         response:GPT的回答
     '''
-    if len(messages) == 0:
-        with open('prompt.txt', 'r') as f:
-            prompt = f.read()
-            messages.append({"role": "system", "content": prompt})
-    completion = openai.ChatCompletion.create(
-        model=model_name,
-        messages=messages
-    )
-    response = completion["choices"][0]["message"]["content"]
-    return response
-
-def modify_json(user_params, response: str, exp_id: str, user_content: str):
-    '''
-    将之前的json和获取的信息进行补充，如果任务种类发生了改变，将其他参数进行清空
-    @param:
-        user_param:之前的json,
-        response:GPT分析的文本
-    @return:
-        merged_param:新的json
-    @influence:
-        会对之前的json文件进行修改，即，修改数据库
-    '''
-    content = '请分析这段文字' + user_content + '并生成一个形如' + str(std_json) + '的json信息'  # TODO:增添json格式样例
-    content += '只输出json，请不要输出任何其他的自然语言内容'
-    completion = openai.ChatCompletion.create(
-        model=model_name,
-        messages=[
-            {"role": "user", "content": content}
-        ]
-    )
-    msg = completion["choices"][0]["message"]["content"]
-    msg = msg.remove('`')
-    new_param = eval(msg)  # 这里感觉挺有风险的
-    new_d = json.loads(new_param)
-    user_d = json.loads(user_params)
-    if new_d['name'] != user_d['name']:  # 这里是刷新
-        write_params(param=new_d, exp_id=exp_id)
-        return json(new_d)
-    merge_d = {}
-    ## 合并json
-    for key, value in new_d.items():
-        if value != None:
-            merge_d[key] = value
-        else:
-            merge_d[key] = user_d[key]
-    has_empty_value = any(value == "" or value is None for value in merge_d.values())
-    if not has_empty_value:
-        # 执行实验
-        # TODO:调用创建执行实验的接口
-        write_params(param=merge_d, exp_id=exp_id)
-        response += '您的参数已经满足，LibCity-GPT已经为您创建了实验！'
-        return json(merge_d)
-    else:
-        ## 补充缺少的参数
-        empty_value_keys = list(all(value == '' or value is None for value in merge_d.values()))
-        response += "您目前还缺少"
-        for i in len(empty_value_keys):
-            response += empty_value_keys[i]
-            if i != len(empty_value_keys) - 1:
-                response += ','
-        response += '的相关参数，请您继续补充~'
-        write_params(param=merge_d, exp_id=exp_id)
-        return json(merge_d)
+    try:
+        if len(messages) == 1:
+            with open('prompt.txt', 'r', encoding='UTF-8') as f:
+                prompt = f.read()
+                messages.append({"role": "system", "content": prompt})
+        completion = client.chat.completions.create(
+            model=model_name,
+            messages=messages
+        )
+        message_content = ''
+        for choice in completion.choices:
+            message_content = choice.message.content
+        return message_content
+    except Exception as e:
+        print(e)
+        return None
 
 
-def write_params(param, exp_id: str):
-    '''
-    这个函数主要是将之前的数据库中的json写入
-    @param:
-        exp_id : 实验名称
-    @return:
-        无
-    '''
-    # TODO:将param写入数据库
+def require_json(messages):
+    try:
+        completion = client.chat.completions.create(
+            model=model_name,
+            messages=messages
+        )
+        message_content = ''
+        for choice in completion.choices:
+            message_content = choice.message.content
+        return message_content
+    except Exception as e:
+        print(e)
+        return None
 
 
 def legal_check(params):

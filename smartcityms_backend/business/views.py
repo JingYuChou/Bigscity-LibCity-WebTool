@@ -9,7 +9,6 @@ import zipfile
 from string import Template
 from urllib.parse import quote
 
-import openai
 from django.conf import settings
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.db.models import Q
@@ -30,6 +29,7 @@ from business.enums import TaskStatusEnum, DatasetStatusEnum, TaskEnum
 from business.filter import FileFilter, TaskFilter
 from business.models import TrafficStatePredAndEta, MapMatching, TrajLocPred
 from business.models import File, Task
+from authentication.models import Account
 from business.scheduler import task_execute_at, task_is_exists, remove_task
 from business.serializers import TrafficStateEtaSerializer, MapMatchingSerializer, TrajLocPredSerializer
 from business.serializers import FileSerializer, TaskSerializer, TaskListSerializer, FileListSerializer
@@ -39,7 +39,7 @@ from common import utils
 from common.response import PassthroughRenderer
 from common.utils import read_file_str, generate_download_file, str_is_empty
 
-from GPTAssistant import std_json, legal_check, require
+from business.GPTAssistant import std_json, legal_check, require, require_json
 
 
 class FileViewSet(CreateModelMixin, DestroyModelMixin, RetrieveModelMixin, ListModelMixin, GenericViewSet):
@@ -309,8 +309,8 @@ class TaskViewSet(ModelViewSet):
         """
         user_id = request.data.get('user_id')
         message = request.data.get('message')
-        # TODO:1、如果message为“我确认开始实验”，则读取Conversation文件夹下user_id对应的params.json，如果满足创建实验条件，则创建实验
-        #  2、从Conversation文件夹读取user_id对应的messages.json，添加新的message，发给ChatGpt；然后将ChatGpt的回复添加到messages.json
+        # 1、如果message为“我确认开始实验”，则读取Conversation文件夹下user_id对应的params.json，如果满足创建实验条件，则创建实验
+        # 2、从Conversation文件夹读取user_id对应的messages.json，添加新的message，发给ChatGpt；然后将ChatGpt的回复添加到messages.json
         folder_path = 'Conversation/'
         params_path = folder_path + user_id + '_params.json'
         messages_path = folder_path + user_id + '_messages.json'
@@ -322,15 +322,27 @@ class TaskViewSet(ModelViewSet):
         if not os.path.exists(messages_path):
             json.dump([], open(messages_path, 'w'))
 
-        params = json.load(open(params_path, 'r'))
-        messages = json.load(open(messages_path, 'r'))
+        with open(params_path, 'r', encoding='UTF-8') as f:
+            params = json.load(f)
+            f.close()
+        with open(messages_path, 'r', encoding='UTF-8') as f:
+            messages = json.load(f)
+            f.close()
         if message == "我确认开始实验":
             if legal_check(params):
-                request = {}
-                request.data = params
-                self.create(request)
-                answer = "实验创建成功"
-                return Response({"answer": answer}, status=status.HTTP_200_OK)
+                try:
+                    account = Account.objects.get(account_number=user_id)
+                    params['creator'] = account
+                    params['dataset'] = File.objects.filter(Q(file_original_name=params['dataset'] + '.zip') & (
+                            Q(visibility=1) | Q(creator_id=account.id)))[0].file_name
+                    params['task_name_show'] = params['task_name']
+                    Task(**params).save()
+                    answer = "实验创建成功。"
+                    os.remove(params_path)
+                    os.remove(messages_path)
+                except Exception as e:
+                    answer = "实验创建失败，失败原因：" + str(e) + "。"
+                return Response(data={"message": answer}, status=status.HTTP_200_OK)
             else:
                 answer = "当前必要参数不完整，无法创建实验，请输入缺少的参数："
                 if params['task_name'] is None:
@@ -341,23 +353,26 @@ class TaskViewSet(ModelViewSet):
                     answer += "、模型"
                 if params['dataset'] is None:
                     answer += "、数据集"
-                return Response({"answer": answer}, status=status.HTTP_400_BAD_REQUEST)
+
+                answer += "。"
+                return Response(data={"message": answer}, status=status.HTTP_200_OK)
 
         messages.append({"role": "user", "content": message})
         response = require(messages)
         messages.append({"role": "assistant", "content": response})
         json.dump(messages, open(messages_path, 'w'))
-        # TODO:从Conversation文件夹读取user_id对应的params.json, 结合message，调用ChatGpt更新JSON
-        with open('Conversation/' + user_id + '_prams.json', 'r', encoding='UTF-8') as f:
+        # 从Conversation文件夹读取user_id对应的params.json, 结合message，调用ChatGpt更新JSON
+        with open(params_path, 'r', encoding='UTF-8') as f:
             params = f.read()
         messages = [{"role": "user",
-                     "content": params + "这是一个需要维护的json数据，格式如下：" + settings.TASK_PARAM_DESCRIBE +
-                                "请根据以下内容进行更新，只要返回json字符串，不要返回其他内容：" + message}]
-        params = require(messages)
-        with open('Conversation/' + user_id + '_prams.json', 'w', encoding='UTF-8') as f:
+                     "content": "JSON1" + params + "JSON1是一个需要维护的json数据，初始格式如下(字段task_name对应实验名称；所属任务task字段必须是以下枚举类，请进行转换:[\"traj_loc_pred\",\"traffic_state_pred\",\"eta\",\"map_matching\",\"road_representation\"]）：" + settings.TASK_PARAM_DESCRIBE +
+                                "请根据以下自然语言内容对JSON1进行更新，只要返回修改后的JSON1，一定不要返回其他任何内容：" + message}]
+        params = require_json(messages)
+        with open(params_path, 'w', encoding='UTF-8') as f:
             f.write(params)
-        # TODO:判断是否达成创建实验条件，如果达成，回复“请问是否还有其他需要添加的参数，如果没有，请输入"我确认开始实验"”
-        return Response(data={"answer": "请问是否还有其他需要添加的参数，如果没有，请输入\"我确认开始实验\""}, status=201)
+        # 判断是否达成创建实验条件，如果达成，回复“请问是否还有其他需要添加的参数，如果没有，请输入"我确认开始实验"”
+        return Response(data={"message": "请问是否还有其他需要添加的参数，如果没有，请输入\"我确认开始实验\"。"},
+                        status=status.HTTP_200_OK)
 
     def get_serializer_class(self):
         """

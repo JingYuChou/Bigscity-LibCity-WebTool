@@ -1,0 +1,22 @@
+2024-03-05 21:33:30.609 | INFO     | backend.settings:<module>:189 - base.py settings loading
+2024-03-05 21:33:33.753 | INFO     | business.urls:<module>:24 - Start to watch log file
+2024-03-05 21:33:33.757 | INFO     | business.urls:<module>:35 - LOG_PATH监控线程已启动，LOG_PATH: D:/LibCity/Bigscity-LibCity\libcity\log\
+2024-03-05 21:34:29.492 | INFO     | business.threads:run:33 - start execute task, backup_dir: D:\LibCity\Bigscity-LibCity-WebTool\smartcityms_backend
+2024-03-05 21:34:29.502 | INFO     | business.threads:run:36 - change dir: D:\LibCity\Bigscity-LibCity
+2024-03-05 21:34:29.513 | INFO     | business.threads:run:51 - execute command: python run_model.py --exp_id 74741 --task map_matching --model HMMM --dataset 3_Seattle --max_epoch 1 --gpu True --gpu_id 0
+2024-03-05 21:34:29.564 | INFO     | common.utils:execute:99 - 命令执行进程启动，进程号: 8736
+2024-03-05 21:34:39.568 | INFO     | common.utils:execute:104 - 实验已结束，状态码：1
+2024-03-05 21:34:39.568 | ERROR    | common.utils:execute:114 - [ERROR] command: python run_model.py --exp_id 74741 --task map_matching --model HMMM --dataset 3_Seattle --max_epoch 1 --gpu True --gpu_id 0; message: Traceback (most recent call last):
+  File "run_model.py", line 36, in <module>
+    run_model(task=args.task, model_name=args.model, dataset_name=args.dataset,
+  File "D:\LibCity\Bigscity-LibCity\libcity\pipeline\pipeline.py", line 30, in run_model
+    config = ConfigParser(task, model_name, dataset_name,
+  File "D:\LibCity\Bigscity-LibCity\libcity\config\config_parser.py", line 26, in __init__
+    self._init_device()
+  File "D:\LibCity\Bigscity-LibCity\libcity\config\config_parser.py", line 130, in _init_device
+    torch.cuda.set_device(gpu_id)
+  File "D:\Anaconda3\envs\LibCity\lib\site-packages\torch\cuda\__init__.py", line 263, in set_device
+    torch._C._cuda_setDevice(device)
+AttributeError: module 'torch._C' has no attribute '_cuda_setDevice'
+
+2024-03-05 21:34:39.587 | INFO     | business.threads:run:158 - execute completed! change path to: D:\LibCity\Bigscity-LibCity-WebTool\smartcityms_backend

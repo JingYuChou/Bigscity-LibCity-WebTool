@@ -126,7 +126,6 @@ import { getToken } from '@/utils/auth'
 import { updateFileVisibility } from '@/api/file'
 import i18n from '@/lang'
 import axios from 'axios'
-import { use } from 'echarts'
 
 export default {
   data() {
@@ -189,13 +188,14 @@ export default {
           this.messages[this.messages.length - 1].text = ''
           this.noSend = true
           let i = 0
+          console.log(response)
           const typingInterval = setInterval(() => {
-            if (i < response.data.message.length) {
+            if (i < response.data.data.message.length) {
               if (this.messages[this.messages.length - 1].text.endsWith('●')) {
                 this.messages[this.messages.length - 1].text = this.messages[this.messages.length - 1].text.slice(0, -1)
               }
               // 添加新的字符和黑色圆点
-              this.messages[this.messages.length - 1].text += response.data.message[i] + '●'
+              this.messages[this.messages.length - 1].text += response.data.data.message[i] + '●'
               this.$nextTick(() => {
                 const container = this.$refs.messages
                 container.scrollTop = container.scrollHeight
@@ -308,7 +308,7 @@ export default {
 }
 
 .messages {
-  height: 600px;
+  height: 500px;
   overflow-y: auto;
   padding: 20px;
   border-radius: 5px;

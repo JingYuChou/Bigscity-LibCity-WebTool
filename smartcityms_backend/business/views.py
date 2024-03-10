@@ -371,8 +371,11 @@ class TaskViewSet(ModelViewSet):
         with open(params_path, 'w', encoding='UTF-8') as f:
             f.write(params)
         # 判断是否达成创建实验条件，如果达成，回复“请问是否还有其他需要添加的参数，如果没有，请输入"我确认开始实验"”
-        return Response(data={"message": "请问是否还有其他需要添加的参数，如果没有，请输入\"我确认开始实验\"。"},
-                        status=status.HTTP_200_OK)
+        if legal_check(params):
+            return Response(data={"message": "请问是否还有其他需要添加的参数，如果没有，请输入\"我确认开始实验\"。"},
+                            status=status.HTTP_200_OK)
+        else:
+            return Response(data=response, status=status.HTTP_200_OK)
 
     def get_serializer_class(self):
         """

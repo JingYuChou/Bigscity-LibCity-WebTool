@@ -164,6 +164,10 @@ def legal_check(params):
         bool : 是否合法
     """
     # 判断'实验名称' '所属任务' '模型' '数据集'是否不为空
-    if params['task_name'] == '' or params['task'] == '' or params['model'] == '' or params['dataset'] == '':
+    try:
+        if params['task_name'] == '' or params['task'] == '' or params['model'] == '' or params['dataset'] == '':
+            return False
+        return True
+    except Exception as e:
+        print(e)
         return False
-    return True

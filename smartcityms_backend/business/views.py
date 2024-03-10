@@ -375,7 +375,7 @@ class TaskViewSet(ModelViewSet):
             return Response(data={"message": "请问是否还有其他需要添加的参数，如果没有，请输入\"我确认开始实验\"。"},
                             status=status.HTTP_200_OK)
         else:
-            return Response(data=response, status=status.HTTP_200_OK)
+            return Response(data={'message' : response}, status=status.HTTP_200_OK)
 
     def get_serializer_class(self):
         """
